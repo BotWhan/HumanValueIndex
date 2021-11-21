@@ -1,6 +1,6 @@
 {
   "context": "client",
-  "identifier": "com.pa.bot.human-value-index",
+  "identifier": "com.pa.bot.human-value-index-client",
   "display_name": "Ratings and anti smurf client mod",
   "description": "Manually rated players and no more smurfing",
   "author": "Bot",
