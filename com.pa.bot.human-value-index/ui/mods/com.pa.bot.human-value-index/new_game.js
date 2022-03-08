@@ -1,5 +1,3 @@
-//http://nuttygroup.org:27395/?case=0&uberid=6089886685367004270
-
 const HVIURL = 'http://nuttygroup.org:27395/?';
 function getWordRating(rating) {
   if (rating <= 3) {
@@ -79,19 +77,6 @@ function editBox(slot) {
 
 
 function toServer(caseNum, id, rating, name) {
-  console.log("&authentication=" + model.uberId());
   $.get(HVIURL + "case=" + caseNum + "&uberid=" + id + "&rating=" + rating + "&name=" + name + "&authentication=" + model.uberId());
   setTimeout(function(){model.update()}, 2000);
-}
-
-
-model.getNameAndId = function () {
-  model.armies().forEach(function eachArmy(index) {
-    index.slots().forEach(function eachSlot(index) {
-      if (index.playerName() != null || index.playerName() != "") {
-        console.log(index.playerName() + " " + index.playerId());
-      }
-    }
-    );
-  });
 }
