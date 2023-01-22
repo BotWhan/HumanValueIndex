@@ -2,16 +2,43 @@
 
 const HVIURL = 'http://nuttygroup.org:27395/?';
 function getWordRating(rating) {
-  if (rating <= 3) {
+  if (rating <= -1000) {
+    return "Wow you're a real comedian";
+  }
+  else if (rating <= -100) {
+    return "Its getting old";
+  }
+  else if (rating <= -10) {
+    return "I'm seeing a trend";
+  }
+  else if (rating <= 0) {
+    return "LMAO BAD";
+  }
+  else if (rating <= 2) {
     return "Bad";
   }
-  else if (rating <= 5) {
+  else if (rating <= 3) {
+    return "Bronze";
+  }
+  else if (rating <= 4) {
     return "Casual";
   }
-  else if (rating <= 7) {
+    else if (rating <= 5) {
+    return "Alright";
+  }
+  else if (rating <= 6) {
     return "Good";
   }
-  return "Very Good";
+  else if (rating <= 6.9) {
+    return ":(";
+  }
+  else if (rating <= 7) {
+    return "Plat";
+  }
+    else if (rating <= 99) {
+    return "Menace";
+  }
+  return "I see you, Broom";
 }
 //api.net.ubernet('/GameClient/UserId?' + $.param({TitleDisplayName: "(name)" }), 'GET', 'text')
 var updateindex = ko.observable(0);
