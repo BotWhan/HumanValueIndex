@@ -26,7 +26,7 @@ function getWordRating(rating) {
     else if (rating <= 5) {
     return "Alright";
   }
-  else if (rating <= 6) {
+  else if (rating <= 6.8) {
     return "Good";
   }
   else if (rating <= 6.9) {
