@@ -32,7 +32,7 @@ function getWordRating(rating) {
   else if (rating <= 6.9) {
     return ":(";
   }
-  else if (rating <= 7) {
+  else if (rating <= 7.9) {
     return "Plat";
   }
     else if (rating <= 99) {
