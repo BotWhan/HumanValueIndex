@@ -14,9 +14,6 @@ function getWordRating(rating) {
   else if (rating <= 0) {
     return "LMAO BAD";
   }
-  else if (rating <= 2) {
-    return "Bad";
-  }
   else if (rating <= 3) {
     return "Bronze";
   }
