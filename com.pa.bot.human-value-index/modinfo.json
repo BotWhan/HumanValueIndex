@@ -1,6 +1,6 @@
 {
   "context": "client",
- "identifier": "com.pa.bot.human-value-index-server",
+ "identifier": "com.pa.bot.human-value-index-client",
   "display_name": "Human Value Index",
   "description": "Anti smurf plus ratings",
   "author": "Bot",
