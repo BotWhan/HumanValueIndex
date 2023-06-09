@@ -56,7 +56,7 @@ model.update = function () {
     }
   });
 };
-setInterval(function(){model.update();}, 10000);
+setInterval(function(){model.update();}, 20000);
 model.humanRatings = function (slot) {
   var value = ko.observable();
   function get() {
