@@ -15,7 +15,6 @@
   }
   #testButton
 {
-    /* background-image: url("http://placekitten.com/200/300") !important; */
     width: 15px !important;
     height: 20px !important;
     border: 0 none transparent !important;
@@ -31,4 +30,121 @@
   position:absolute;
   top:0;
   right:0;
+}
+div.slot-player { position: relative; }
+
+.hvi-badges {
+  position: absolute;
+  top: -2px;
+  left: 158px;
+  font-size: 11px;
+  line-height: 12px;
+  text-shadow: none;
+  white-space: nowrap;
+}
+.hvi-badge {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 5px;
+  background: #2a4a5a;
+  border: 1px solid #1a3a4a;
+  border-radius: 3px;
+  color: #9fe4ff;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.hvi-ratingline {
+  cursor: pointer;
+  color: #daaa00;
+  font-weight: bold;
+}
+.hvi-line {
+  cursor: pointer;
+}
+.hvi-prefix {
+  font-weight: bold;
+}
+.hvi-r-low {
+  color: #ff5f4f;
+}
+.hvi-r-mid {
+  color: #daaa00;
+}
+.hvi-r-high {
+  color: #5ad45a;
+}
+
+.hvi-field { margin: 4px 0; text-align: left; }
+.hvi-badge-list {
+  text-align: left;
+  margin: 4px 0;
+}
+.hvi-badge-item {
+  display: inline-block;
+  margin: 2px;
+  padding: 1px 4px;
+  background: #16323f;
+  border: 1px solid #7fd4ff;
+  border-radius: 3px;
+  color: #7fd4ff;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.hvi-badge-item button {
+  margin-left: 4px;
+  background: none;
+  border: none;
+  color: #f66;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 10px;
+  padding: 0;
+}
+.hvi-editor-msg { font-size: 11px; color: #f66; margin: 4px 0; text-align: left; }
+#editPlayerBox input, #editPlayerBox textarea {
+  vertical-align: top;
+  background: #0a151c;
+  color: #fff;
+  border: 1px solid #555;
+}
+.hviNotesBox {
+  position: absolute;
+  z-index: 9;
+  background-color: #0f2027;
+  border: 1px solid #0f2027;
+  width: 270px;
+}
+.hvi-notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: move;
+  background-color: #0f2027;
+  color: RGB(218, 170, 0);
+}
+.hvi-notes-title {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 6px;
+}
+.hvi-notes-actions {
+  white-space: nowrap;
+}
+.hvi-notes-actions button {
+  margin-left: 4px;
+}
+.hvi-notes-input {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 0 8px 8px;
+  background: #0a151c;
+  color: #fff;
+  border: 1px solid #555;
+  resize: vertical;
+}
+.hvi-notes-input[readonly] {
+  opacity: 0.7;
 }
