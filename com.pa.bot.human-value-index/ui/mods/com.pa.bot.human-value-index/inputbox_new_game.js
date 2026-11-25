@@ -32,39 +32,20 @@ function dragElement(inputBox) {
     }
 }
 
-function setInputBox() {
-    if (document.getElementById('editPlayerBox')) {
-        return;
-    }
-    $('title').after(
-        '<div id="editPlayerBox">' +
-        '<div id="editPlayerBoxheader">' +
-        'Edits' +
-        '</div>' +
-        '<div id="data">' +
-        '->' +
-        '</div>' +
-        '</div>');
-    dragElement(document.getElementById("editPlayerBox"));
-}
-
 function setNotesBox(key, playerName) {
     var id = 'hviNotesBox_' + key;
     if (document.getElementById(id)) {
         return;
     }
-    var canEdit = !!hviPassword();
     $('title').after(
         '<div class="hviNotesBox" id="' + id + '">' +
         '<div class="hvi-notes-header" id="' + id + 'header">' +
         '<span class="hvi-notes-title">' + hviAttr(playerName) + ' Note</span>' +
         '<span class="hvi-notes-actions">' +
-        (canEdit ? '<button type="button" onclick="hviSubmitNotesPopup(\'' + key + '\')"><small>Submit</small></button>' : '') +
         '<button type="button" onclick="hviNotesClose(\'' + key + '\')"><small>X</small></button>' +
         '</span>' +
         '</div>' +
-        '<textarea class="hvi-notes-input" id="hviNotesInput_' + key + '" rows="4"' +
-        (canEdit ? '' : ' readonly') + '></textarea>' +
+        '<textarea class="hvi-notes-input" id="hviNotesInput_' + key + '" rows="4" readonly></textarea>' +
         '</div>');
     dragElement(document.getElementById(id));
 }
