@@ -1,12 +1,9 @@
 const HVIURL = 'http://nuttygroup.org:27395/?';
-const HVIPASSWORDFILE = 'coui:/client_mods/HVI_password.txt';
-const HVIPASSWORDFILE_HOST = 'coui://client_mods/HVI_password.txt';
-const HVIPASSWORDFILE_MOD = 'coui://ui/mods/com.pa.bot.human-value-index/HVI_password.txt';
-const HVIPASSWORDFILE_ALT = 'coui:/HVI_password.txt';
+const HVILOCAL = 'http://127.0.0.1:27395/';
 
-var hviPassword = ko.observable('');
-var hviProbesLeft = 4;
 var hviRefreshTags = [];
+var hviLocalUp = false;
+var hviLocalPingTimer = null;
 
 function getWordRatingOriginal(rating) {
   if (rating <= -1000) {
@@ -40,17 +37,6 @@ function hviAttr(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function hviAccept(data) {
-  var pw = String(data).replace(/^\s+|\s+$/g, '');
-  if (!hviPassword() && pw.length > 0) {
-    hviPassword(pw);
-    try {
-      window.localStorage.setItem('hvi_password', pw);
-    } catch (e) {}
-  }
-  hviRefreshAllTags();
-}
-
 function hviRefreshAllTags() {
   for (var idx = 0; idx < hviRefreshTags.length; idx++) {
     try {
@@ -59,56 +45,7 @@ function hviRefreshAllTags() {
   }
 }
 
-function hviSettle() {
-  hviProbesLeft = hviProbesLeft - 1;
-  if (hviProbesLeft > 0) {
-    return;
-  }
-  if (!hviPassword()) {
-    var stored = null;
-    try {
-      stored = window.localStorage.getItem('hvi_password');
-    } catch (e) {}
-    if (stored) {
-      hviPassword(stored);
-    }
-  }
-  model.determineAuth();
-  model.update();
-  hviRefreshAllTags();
-}
-
-function hviFetch(requestUrl) {
-  $.ajax({
-    url: requestUrl,
-    dataType: 'text',
-    timeout: 5000,
-    success: function (data) {
-      if (typeof data === 'string' && data.replace(/\s/g, '').length > 0) {
-        hviAccept(data);
-      }
-      hviSettle();
-    },
-    error: function () {
-      hviSettle();
-    }
-  });
-}
-
-hviFetch(HVIPASSWORDFILE);
-hviFetch(HVIPASSWORDFILE_HOST);
-hviFetch(HVIPASSWORDFILE_MOD);
-hviFetch(HVIPASSWORDFILE_ALT);
-
 var updateindex = ko.observable(0);
-
-model.determineAuth = function () {
-  $.getJSON(HVIURL + "case=3&authentication=" + model.uberId() + "&password=" + encodeURIComponent(hviPassword()), function (result) {
-    auth(result === true || result === 'true');
-  });
-};
-var auth = ko.observable();
-model.determineAuth();
 
 model.update = function () {
   $.get(HVIURL + "uberid=" + encodeURIComponent(model.uberId()), function (update) {
@@ -120,10 +57,50 @@ model.update = function () {
 setInterval(function () {
   model.update();
   hviRefreshAllTags();
-  if (auth() !== true) {
-    model.determineAuth();
-  }
 }, 20000);
+
+(function hviSeedLocal() {
+  try {
+    if (window.localStorage.getItem('hvi_local_up') === '1') {
+      hviLocalUp = true;
+    }
+  } catch (e) {}
+})();
+
+function hviSetLocalUp(up) {
+  var was = hviLocalUp;
+  hviLocalUp = !!up;
+  try {
+    window.localStorage.setItem('hvi_local_up', up ? '1' : '0');
+  } catch (e) {}
+  if (was !== hviLocalUp) {
+    hviRefreshAllTags();
+  }
+}
+
+function hviPingLocal() {
+  $.ajax({
+    url: HVILOCAL + 'ping',
+    dataType: 'text',
+    timeout: 1500,
+    success: function (d) {
+      if (String(d).indexOf('hvi-local') === 0) {
+        hviSetLocalUp(true);
+        if (hviLocalPingTimer) {
+          clearInterval(hviLocalPingTimer);
+          hviLocalPingTimer = null;
+        }
+      }
+    },
+    error: function () {
+      hviSetLocalUp(false);
+      if (!hviLocalPingTimer) {
+        hviLocalPingTimer = setInterval(hviPingLocal, 10000);
+      }
+    }
+  });
+}
+hviPingLocal();
 
 function hviTargetId(slot, cb) {
   var pid = slot.playerId();
@@ -161,6 +138,9 @@ model.humanRatings = function (slot) {
   }
   var badges = ko.observable([]);
   var ratingLine = ko.observable('');
+  var ratingSep = ko.observable('');
+  var linePrefix = ko.observable('');
+  var lineSep = ko.observable('');
   var linePrefix = ko.observable('');
   var ratingClass = ko.observable('');
   var lastRating = '';
@@ -169,19 +149,26 @@ model.humanRatings = function (slot) {
   var fetchedFor = null;
   var refreshTimer = null;
 
-  function rebuildLine() {
+    function rebuildLine() {
     var name = slot.playerName() ? String(slot.playerName()) : '';
     var showHviName = lastHviName && lastHviName.toLowerCase() !== name.toLowerCase();
-    var prefix = '';
+
     if (showHviName) {
-      prefix = (name ? ' | ' : '') + lastHviName;
+      lineSep(' | ');
+      linePrefix(lastHviName);
+    } else {
+      lineSep('');
+      linePrefix('');
     }
-    var ratingText = lastRating;
-    if (ratingText && (name || showHviName)) {
-      ratingText = ' | ' + ratingText;
+
+    if (lastRating && (name || showHviName)) {
+      ratingSep(' | ');
+      ratingLine(lastRating);
+    } else {
+      ratingSep('');
+      ratingLine('');
     }
-    linePrefix(prefix);
-    ratingLine(ratingText);
+
     var value = parseFloat(lastRating);
     if (!isFinite(value)) {
       ratingClass('');
@@ -218,7 +205,7 @@ model.humanRatings = function (slot) {
         } else if (allowNameFallback) {
           resolveByName(seq, gotPlayerId);
           return;
-        } else if (auth() == true) {
+        } else if (hviLocalUp) {
           lastHviName = '';
           lastRating = 'C';
         } else {
@@ -236,7 +223,7 @@ model.humanRatings = function (slot) {
       }
     });
     $.ajax({
-      url: HVIURL + "case=4&uberid=" + encodeURIComponent(gotPlayerId) + "&authentication=" + encodeURIComponent(model.uberId()) + "&password=" + encodeURIComponent(hviPassword()),
+      url: HVIURL + "case=4&uberid=" + encodeURIComponent(gotPlayerId),
       dataType: 'json',
       timeout: 5000,
       success: function (data) {
@@ -276,7 +263,7 @@ model.humanRatings = function (slot) {
       slot.__hviUberIdFor = slot.playerId();
       if (triedId && String(id) === String(triedId)) {
         lastHviName = '';
-        lastRating = (auth() == true) ? 'C' : '';
+        lastRating = hviLocalUp ? 'C' : '';
         rebuildLine();
         return;
       }
@@ -332,9 +319,10 @@ model.humanRatings = function (slot) {
   updateindex.subscribe(function () {
     get();
   });
-  slot.__hviRatings = { badges: badges, ratingLine: ratingLine, linePrefix: linePrefix, ratingClass: ratingClass };
+    slot.__hviRatings = { badges: badges, ratingLine: ratingLine, ratingSep: ratingSep, linePrefix: linePrefix, lineSep: lineSep, ratingClass: ratingClass };
   return slot.__hviRatings;
-}
+};
+
 function hviNameClick(slot) {
   if (slot.ai()) {
     return;
@@ -368,162 +356,38 @@ $('div.slot-player-text.truncate').before(
 $('div.slot-player-text.truncate').after(
   hviKoOpen +
   '<span class="hvi-line" data-bind="click: function(){notesBox(slot)}, event: { contextmenu: function(data, event){ editBox(slot); event.preventDefault(); return false; } }">' +
+  '<span class="hvi-sep" data-bind="text: lineSep"></span>' +
   '<span class="hvi-prefix" data-bind="text: linePrefix"></span>' +
+  '<span class="hvi-sep" data-bind="text: ratingSep"></span>' +
   '<span class="hvi-ratingline" data-bind="text: ratingLine, css: ratingClass"></span>' +
   '</span>' +
   hviKoClose);
 
-var hviEditorSlot = null;
-var hviEditorTarget = null;
-var hviEditorBadges = [];
-
 function editBox(slot) {
-  if (!hviPassword()) {
+  if (slot.ai()) {
     return;
   }
-  hviEditorSlot = slot;
-  hviEditorTarget = null;
-  resolveEditorId(slot);
-}
-
-function resolveEditorId(slot) {
+  if (!hviLocalUp) {
+    hviPingLocal();
+    return;
+  }
   hviTargetId(slot, function (id) {
-    if (hviEditorSlot !== slot) {
-      return;
-    }
     if (!id) {
-      hviRenderEditor();
       return;
     }
-    hviEditorTarget = id;
-    hviRenderEditor();
-  });
-}
-
-function hviRenderEditor() {
-  var slot = hviEditorSlot;
-  if (!slot || !hviPassword()) {
-    return;
-  }
-  setInputBox();
-  var header = document.getElementById('editPlayerBoxheader');
-  var data = document.getElementById('data');
-  if (!header || !data) {
-    return;
-  }
-  header.innerHTML = '<h3>' + hviAttr(slot.playerName()) + '</h3>';
-  if (!hviEditorTarget) {
-    data.innerHTML = '<div class="hvi-editor-msg">server offline — could not resolve player id</div>' +
-      '<button type="button" id="closeButton" onclick="document.getElementById(\'editPlayerBox\').remove()"><small>X</small></button>';
-    return;
-  }
-  var target = hviEditorTarget;
-  var profileName = '';
-  var pending = 2;
-
-  function done() {
-    pending = pending - 1;
-    if (pending > 0) {
-      return;
-    }
-    hviFillControls(profileName);
-  }
-
-  $.ajax({
-    url: HVIURL + "case=0&uberid=" + target + "&name=" + encodeURIComponent(slot.playerName()),
-    dataType: 'json',
-    timeout: 5000,
-    success: function (p) {
-      if (p && p.name && p.name != "not registered") {
-        profileName = p.name;
+    $.ajax({
+      url: HVILOCAL + 'open?' + $.param({
+        uberid: String(id),
+        editor: String(model.uberId())
+      }),
+      dataType: 'text',
+      timeout: 2000,
+      error: function () {
+        hviSetLocalUp(false);
+        hviPingLocal();
       }
-    },
-    complete: done
+    });
   });
-  $.ajax({
-    url: HVIURL + "case=4&uberid=" + target + "&authentication=" + encodeURIComponent(model.uberId()) + "&password=" + encodeURIComponent(hviPassword()),
-    dataType: 'json',
-    timeout: 5000,
-    success: function (d) {
-      hviEditorBadges = (d && d.badges) ? d.badges : [];
-    },
-    complete: done
-  });
-}
-
-function hviFillControls(profileName) {
-  var data = document.getElementById('data');
-  if (!data) {
-    return;
-  }
-  var badgeHtml = '';
-  for (var idx = 0; idx < hviEditorBadges.length; idx++) {
-    var badge = String(hviEditorBadges[idx]);
-    badgeHtml += '<span class="hvi-badge-item">' + hviAttr(badge) +
-      '<button type="button" onclick="hviRemoveBadge(\'' + badge.replace(/'/g, "\\'") + '\')"><small>X</small></button></span>';
-  }
-  data.innerHTML = '<div class="hvi-field"><input type="number" id="newRating" placeholder="New rating" autocomplete="off" style="width:90px" />' +
-    '<button type="button" onclick="hviSubmitRating()"><small>Rate</small></button></div>' +
-    '<div class="hvi-field"><input type="text" id="newName" placeholder="HVI name" autocomplete="off" style="width:150px" value="' + hviAttr(profileName) + '" />' +
-    '<button type="button" onclick="hviSubmitName()"><small>Rename</small></button></div>' +
-    '<div class="hvi-field"><input type="text" id="newBadge" placeholder="Badge" autocomplete="off" style="width:110px" />' +
-    '<button type="button" onclick="hviAddBadge()"><small>Add</small></button></div>' +
-    '<div class="hvi-badge-list">' + badgeHtml + '</div>' +
-    '<button type="button" id="closeButton" onclick="document.getElementById(\'editPlayerBox\').remove()"><small>X</small></button>';
-}
-
-function hviOp(params) {
-  if (!hviEditorTarget) {
-    return;
-  }
-  var qs = 'case=1&uberid=' + encodeURIComponent(hviEditorTarget) +
-    '&authentication=' + encodeURIComponent(model.uberId()) +
-    '&password=' + encodeURIComponent(hviPassword());
-  for (var kdx in params) {
-    if (Object.prototype.hasOwnProperty.call(params, kdx)) {
-      qs += '&' + kdx + '=' + encodeURIComponent(params[kdx]);
-    }
-  }
-  $.get(HVIURL + qs);
-  setTimeout(function () {
-    model.update();
-    hviRefreshAllTags();
-    if (document.getElementById('editPlayerBox') && hviEditorSlot) {
-      hviRenderEditor();
-    }
-  }, 1500);
-}
-
-function hviSubmitRating() {
-  var el = document.getElementById('newRating');
-  if (!el || el.value.length == 0) {
-    return;
-  }
-  hviOp({ rating: el.value, name: hviEditorSlot.playerName() });
-}
-
-function hviSubmitName() {
-  var el = document.getElementById('newName');
-  if (!el || el.value.length == 0) {
-    return;
-  }
-  hviOp({ change: 'name', newname: el.value });
-}
-
-function hviAddBadge() {
-  var el = document.getElementById('newBadge');
-  if (!el) {
-    return;
-  }
-  var badge = String(el.value).replace(/^\s+|\s+$/g, '');
-  if (!/^[A-Za-z0-9_-]{1,24}$/.test(badge)) {
-    return;
-  }
-  hviOp({ change: 'badge', badge: badge, action: 'add' });
-}
-
-function hviRemoveBadge(badge) {
-  hviOp({ change: 'badge', badge: badge, action: 'remove' });
 }
 
 var hviNotesBoxes = {};
@@ -563,9 +427,7 @@ function fetchNotesPopup(key) {
     return;
   }
   $.ajax({
-    url: HVIURL + "case=4&uberid=" + encodeURIComponent(box.target) +
-      "&authentication=" + encodeURIComponent(model.uberId()) +
-      "&password=" + encodeURIComponent(hviPassword()),
+    url: HVIURL + "case=4&uberid=" + encodeURIComponent(box.target),
     dataType: 'json',
     timeout: 5000,
     success: function (d) {
@@ -589,15 +451,5 @@ function hviNotesClose(key) {
   }
 }
 
-function hviSubmitNotesPopup(key) {
-  var box = hviNotesBoxes[key];
-  var el = document.getElementById('hviNotesInput_' + key);
-  if (!box || !el) {
-    return;
-  }
-  var qs = 'case=1&uberid=' + encodeURIComponent(box.target) +
-    '&authentication=' + encodeURIComponent(model.uberId()) +
-    '&password=' + encodeURIComponent(hviPassword()) +
-    '&change=note&note=' + encodeURIComponent(el.value);
-  $.get(HVIURL + qs);
-}
+model.update();
+hviRefreshAllTags();
