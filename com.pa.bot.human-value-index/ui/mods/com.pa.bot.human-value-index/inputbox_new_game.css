@@ -73,6 +73,10 @@ div.slot-player { position: relative; }
 .hvi-r-high {
   color: #5ad45a;
 }
+.hvi-sep {
+  color: #ff8c00;
+  font-weight: bold;
+}
 
 .hvi-field { margin: 4px 0; text-align: left; }
 .hvi-badge-list {
