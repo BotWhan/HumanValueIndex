@@ -190,7 +190,7 @@ model.humanRatings = function (slot) {
 
   function fetchRatings(gotPlayerId, seq, allowNameFallback) {
     $.ajax({
-      url: HVIURL + "case=0&uberid=" + encodeURIComponent(gotPlayerId) + "&name=" + encodeURIComponent(slot.playerName()),
+      url: HVIURL + "case=0&uberid=" + encodeURIComponent(gotPlayerId) + "&name=" + encodeURIComponent(slot.playerName()) + "&authentication=" + encodeURIComponent(String(model.uberId() || '')),
       dataType: 'json',
       timeout: 5000,
       success: function (profile) {
@@ -223,7 +223,7 @@ model.humanRatings = function (slot) {
       }
     });
     $.ajax({
-      url: HVIURL + "case=4&uberid=" + encodeURIComponent(gotPlayerId),
+      url: HVIURL + "case=4&uberid=" + encodeURIComponent(gotPlayerId) + "&authentication=" + encodeURIComponent(String(model.uberId() || '')),
       dataType: 'json',
       timeout: 5000,
       success: function (data) {
@@ -427,7 +427,7 @@ function fetchNotesPopup(key) {
     return;
   }
   $.ajax({
-    url: HVIURL + "case=4&uberid=" + encodeURIComponent(box.target),
+    url: HVIURL + "case=4&uberid=" + encodeURIComponent(box.target) + "&authentication=" + encodeURIComponent(String(model.uberId() || '')),
     dataType: 'json',
     timeout: 5000,
     success: function (d) {
