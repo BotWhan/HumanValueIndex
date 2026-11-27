@@ -1,7 +1,4 @@
-// const HVIURL = 'http://nuttygroup.org:27395/?';
-const HVIURL = 'http://10.44.0.7:11280/?';
-// 'http://10.44.0.7:11280/?';
-// 'http://nuttygroup.org:27395/?';
+const HVIURL = 'http://nuttygroup.org:27395/?';
 const HVILOCAL = 'http://127.0.0.1:27395/';
 
 var hviRefreshTags = [];
@@ -193,7 +190,7 @@ model.humanRatings = function (slot) {
 
   function fetchRatings(gotPlayerId, seq, allowNameFallback) {
     $.ajax({
-      url: HVIURL + "case=0&uberid=" + encodeURIComponent(gotPlayerId) + "&name=" + encodeURIComponent(slot.playerName()) + "&authentication=" + encodeURIComponent(String(model.uberId() || '')),
+      url: HVIURL + "case=0&uberid=" + encodeURIComponent(gotPlayerId) + "&name=" + encodeURIComponent(slot.playerName()),
       dataType: 'json',
       timeout: 5000,
       success: function (profile) {
@@ -226,7 +223,7 @@ model.humanRatings = function (slot) {
       }
     });
     $.ajax({
-      url: HVIURL + "case=4&uberid=" + encodeURIComponent(gotPlayerId) + "&authentication=" + encodeURIComponent(String(model.uberId() || '')),
+      url: HVIURL + "case=4&uberid=" + encodeURIComponent(gotPlayerId),
       dataType: 'json',
       timeout: 5000,
       success: function (data) {
@@ -430,7 +427,7 @@ function fetchNotesPopup(key) {
     return;
   }
   $.ajax({
-    url: HVIURL + "case=4&uberid=" + encodeURIComponent(box.target) + "&authentication=" + encodeURIComponent(String(model.uberId() || '')),
+    url: HVIURL + "case=4&uberid=" + encodeURIComponent(box.target),
     dataType: 'json',
     timeout: 5000,
     success: function (d) {
